@@ -52,7 +52,7 @@ public:
         : BaseTransaction(id, tien, dm, desc, dt) {}
 
     double laySoTienThucTe() const override {
-        return abs(soTien); // Thu nh?p là s? duong
+        return abs(soTien);
     }
 
     string layLoaiGiaoDich() const override {
@@ -66,7 +66,7 @@ public:
         : BaseTransaction(id, tien, dm, desc, dt) {}
 
     double laySoTienThucTe() const override {
-        return -abs(soTien); // Chi phí là s? âm
+        return -abs(soTien);
     }
 
     string layLoaiGiaoDich() const override {
@@ -95,11 +95,9 @@ public:
     double getSoDu() const { return soDu; }
     const vector<shared_ptr<BaseTransaction>>& getDanhSachGiaoDich() const { return dsgd; }
 
-    // Phuong th?c x? lý c?ng/tr? ti?n don gi?n
     bool thucHienGiaoDich(shared_ptr<BaseTransaction> g) {
         double thayDoi = g->laySoTienThucTe();
 
-        // Ki?m tra n?u tài kho?n không d? ti?n chi tr?
         if (soDu + thayDoi < 0) {
             cout << " -> [That bai] Tai khoan '" << tenTK << "' không du so du!\n";
             return false;
@@ -181,7 +179,6 @@ public:
 int main() {
     FinanceManager ql;
 
-    // Kh?i t?o s?n m?t s? tài kho?n m?u
     ql.themTaiKhoan(Account("TK01", "Vi Tien Mat", "Tien mat", 1000000));
     ql.themTaiKhoan(Account("TK02", "MB Bank", "Ngan hang", 5000000));
     ql.themTaiKhoan(Account("TK03", "Ví MoMo", "Ví di?n t?", 500000));
