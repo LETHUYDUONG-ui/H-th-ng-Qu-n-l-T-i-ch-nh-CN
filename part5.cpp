@@ -181,7 +181,7 @@ int main() {
 
     ql.themTaiKhoan(Account("TK01", "Vi Tien Mat", "Tien mat", 1000000));
     ql.themTaiKhoan(Account("TK02", "MB Bank", "Ngan hang", 5000000));
-    ql.themTaiKhoan(Account("TK03", "Ví MoMo", "Ví di?n t?", 500000));
+    ql.themTaiKhoan(Account("TK03", "Ví MoMo", "Ví dien tu", 500000));
 
     int chon = -1;
     do {
