@@ -14,7 +14,7 @@
 using namespace std;
 
 // ==========================================
-// H?P NH?T: C�C CLASS GIAO D?CH (D�ng chung)
+// HỢP NHẤT: CÁC CLASS GIAO DỊCH (Dùng chung)
 // ==========================================
 class BaseTransaction {
 protected:
@@ -40,11 +40,11 @@ public:
     string getNgayTao() const { return ngayTao; }
 
     virtual void hienThi() const {
-        cout << "[" << ngayTao << "] [" << layLoaiGiaoDich() << "] M�: " << maGD
-             << " | Danh m?c: " << danhMuc 
-             << " | S? ti?n: " << fixed << setprecision(0) << soTien << " VN�";
+        cout << "[" << ngayTao << "] [" << layLoaiGiaoDich() << "] Mã: " << maGD
+             << " | Danh mục: " << danhMuc 
+             << " | Số tiền: " << fixed << setprecision(0) << soTien << " VNĐ";
         if (!moTa.empty()) {
-            cout << " | Ghi ch�: " << moTa;
+            cout << " | Ghi chú: " << moTa;
         }
         cout << endl;
     }
@@ -59,7 +59,7 @@ public:
         return abs(soTien);
     }
     string layLoaiGiaoDich() const override {
-        return "Thu Nh?p";
+        return "Thu Nhập";
     }
 };
 
@@ -72,7 +72,7 @@ public:
         return -abs(soTien);
     }
     string layLoaiGiaoDich() const override {
-        return "Chi Ph�";
+        return "Chi Phí";
     }
 };
 
@@ -81,29 +81,29 @@ private:
     string chuKy;
 
 public:
-    RecurringExpenseTransaction(string id, double tien, string dm, string ck = "H�ng th�ng", string desc = "", string dt = "2026-09-14")
+    RecurringExpenseTransaction(string id, double tien, string dm, string ck = "Hàng tháng", string desc = "", string dt = "2026-09-14")
         : ExpenseTransaction(id, tien, dm, desc, dt), chuKy(ck) {}
 
     string getChuKy() const { return chuKy; }
 
     string layLoaiGiaoDich() const override {
-        return "Chi Ph� �?nh K?";
+        return "Chi Phí Định Kỳ";
     }
 
     void hienThi() const override {
-        cout << "[" << ngayTao << "] [" << layLoaiGiaoDich() << "] M�: " << maGD
-             << " | Danh m?c: " << danhMuc 
-             << " | S? ti?n: " << fixed << setprecision(0) << soTien << " VN�"
-             << " | Chu k?: " << chuKy;
+        cout << "[" << ngayTao << "] [" << layLoaiGiaoDich() << "] Mã: " << maGD
+             << " | Danh mục: " << danhMuc 
+             << " | Số tiền: " << fixed << setprecision(0) << soTien << " VNĐ"
+             << " | Chu kỳ: " << chuKy;
         if (!moTa.empty()) {
-            cout << " | Ghi ch�: " << moTa;
+            cout << " | Ghi chú: " << moTa;
         }
         cout << endl;
     }
 };
 
 // ==========================================
-// H?P NH?T: CLASS T�I KHO?N
+// HỢP NHẤT: CLASS TÀI KHOẢN
 // ==========================================
 class Account {
 private:
@@ -126,26 +126,26 @@ public:
     bool thucHienGiaoDich(shared_ptr<BaseTransaction> g) {
         double td = g->laySoTienThucTe();
         if (soDu + td < 0) {
-            cout << " -> [Th?t b?i] T�i kho?n '" << tenTK << "' kh�ng d? ti?n!\n";
+            cout << " -> [Thất bại] Tài khoản '" << tenTK << "' không đủ tiền!\n";
             return false;
         }
         soDu += td;
         dsgd.push_back(g);
-        cout << " -> [Th�nh c�ng] TK '" << tenTK << "' S? du m?i: " 
-             << fixed << setprecision(0) << soDu << " VN�\n";
+        cout << " -> [Thành công] TK '" << tenTK << "' Số dư mới: " 
+             << fixed << setprecision(0) << soDu << " VNĐ\n";
         return true;
     }
 
     void inThongTin() const {
-        cout << "M� TK: " << maTK << " | T�n: " << setw(12) << left << tenTK 
-             << " | Lo?i: " << setw(10) << left << loaiTK 
-             << " | S? du: " << fixed << setprecision(0) << soDu << " VN�\n";
+        cout << "Mã TK: " << maTK << " | Tên: " << setw(12) << left << tenTK 
+             << " | Loại: " << setw(10) << left << loaiTK 
+             << " | Số dư: " << fixed << setprecision(0) << soDu << " VNĐ\n";
     }
 
     void inLichSuGiaoDich() const {
-        cout << "\n--- L?CH S? GIAO D?CH T�I KHO?N: " << tenTK << " ---\n";
+        cout << "\n--- LỊCH SỬ GIAO DỊCH TÀI KHOẢN: " << tenTK << " ---\n";
         if(dsgd.empty()){
-            cout << "(Chua c� giao d?ch n�o)\n";
+            cout << "(Chưa có giao dịch nào)\n";
         } else {
             for(const auto& g : dsgd) { g->hienThi(); }
         }
@@ -153,7 +153,7 @@ public:
 };
 
 // ==========================================
-// C�C CLASS QU?N L� T? C�C PH?N (Gi? nguy�n)
+// CÁC CLASS QUẢN LÝ TỪ CÁC PHẦN (Giữ nguyên)
 // ==========================================
 class Budget {
 private:
@@ -308,7 +308,7 @@ public:
         }
 
         auto gdRut = make_shared<ExpenseTransaction>("CT_OUT", soTien, "Chuyen tien", "Sang " + tkDich->getTenTK());
-        auto gdNap = make_shared<IncomeTransaction>("CT_IN", soTien, "Nhan tien", "T? " + tkNguon->getTenTK());
+        auto gdNap = make_shared<IncomeTransaction>("CT_IN", soTien, "Nhan tien", "Từ " + tkNguon->getTenTK());
 
         if (tkNguon->thucHienGiaoDich(gdRut)) {
             tkDich->thucHienGiaoDich(gdNap);
@@ -387,8 +387,8 @@ public:
                 soCot = 1;
             }
             cout << thang << " | ";
-            for (int i = 0; i < soCot; i++) cout << "?";
-            cout << " " << fixed << setprecision(0) << soTien << " VN?\n";
+            for (int i = 0; i < soCot; i++) cout << "■";
+            cout << " " << fixed << setprecision(0) << soTien << " VNĐ\n";
         }
         cout << "==============================================\n";
         cout << "Chu thich: Moi cot dai toi da 40 ky tu.\n";
@@ -474,13 +474,13 @@ int getNextId(vector<Transaction> transactions) {
 }
 
 // ==========================================
-// C�C H�M CH?Y DEMO �U?C T�CH RA T? 7 FILE CU
+// CÁC HÀM CHẠY DEMO ĐƯỢC TÁCH RA TỪ 7 FILE CŨ
 // ==========================================
 void demoPhan1() {
     cout << "\n--- DEMO PHAN 1: GIAO DICH CO BAN ---\n";
-    IncomeTransaction gd1("GD01", 5000000, "Luong", "Luong th�ng 9");
-    ExpenseTransaction gd2("GD02", 150000, "An u?ng", "An t?i");
-    RecurringExpenseTransaction gd3("GD03", 2500000, "Ti?n nh�", "H�ng th�ng", "Tr? th�ng 9");
+    IncomeTransaction gd1("GD01", 5000000, "Luong", "Luong tháng 9");
+    ExpenseTransaction gd2("GD02", 150000, "An uống", "An tối");
+    RecurringExpenseTransaction gd3("GD03", 2500000, "Tiền nhà", "Hàng tháng", "Trả tháng 9");
 
     gd1.hienThi();
     gd2.hienThi();
@@ -489,11 +489,11 @@ void demoPhan1() {
 
 void demoPhan2() {
     cout << "\n--- DEMO PHAN 2: TAI KHOAN ---\n";
-    Account vtm("TK01", "V� Ti?n M?t", "Ti?n m?t", 5e5);
-    Account mb("TK02", "MB Bank", "Ng�n h�ng", 1e7);
-    Account vmm("TK03", "V� MoMo", "V� di?n t?", 3e5);
+    Account vtm("TK01", "Ví Tiền Mặt", "Tiền mặt", 5e5);
+    Account mb("TK02", "MB Bank", "Ngân hàng", 1e7);
+    Account vmm("TK03", "Ví MoMo", "Ví điện tử", 3e5);
     
-    // G?i theo h�m tr? v? ban d?u trong code
+    // Gọi theo hàm trả về ban đầu trong code
     (void)(vtm.inThongTin(), mb.inThongTin(), vmm.inThongTin());
 }
 
@@ -559,4 +559,210 @@ void demoPhan3() {
 
 void demoPhan4() {
     cout << "\n--- DEMO PHAN 4: LAP LICH GIAO DICH ---\n";
-    Account mb("TK02", "MB Bank", "Ngan hang", 5000000.
+    Account mb("TK02", "MB Bank", "Ngan hang", 5000000.0);
+    Account vmm("TK03", "Vi MoMo", "Vi dien tu", 800000.0);
+
+    cout << "--- TRANG THAI TAI KHOAN BAN DAU ---\n";
+    mb.inThongTin();
+    vmm.inThongTin();
+    cout << "\n";
+
+    auto tienTro = make_shared<RecurringExpenseTransaction>(
+        "REC01", 2500000, "Tien nha", "Hang thang", "Tro co dinh hang thang"
+    );
+    auto spotify = make_shared<RecurringExpenseTransaction>(
+        "REC02", 59000, "Giai tri", "Hang thang", "Goi Spotify Sinh Vien"
+    );
+
+    TransactionScheduler scheduler;
+    scheduler.registerRecurringTransaction(tienTro, &mb);
+    scheduler.registerRecurringTransaction(spotify, &vmm);
+
+    scheduler.processMonthlyTransactions("2026-09");
+
+    cout << "\n--- SO DU SAU KHI TU DONG TRU CHI PHI THANG 09/2026 ---\n";
+    mb.inThongTin();
+    vmm.inThongTin();
+
+    scheduler.processMonthlyTransactions("2026-10");
+
+    cout << "\n--- SO DU SAU KHI TU DONG TRU CHI PHI THANG 10/2026 ---\n";
+    mb.inThongTin();
+    vmm.inThongTin();
+}
+
+void demoPhan5() {
+    cout << "\n--- DEMO PHAN 5: FINANCE MANAGER ---\n";
+    FinanceManager ql;
+    ql.themTaiKhoan(Account("TK01", "Vi Tien Mat", "Tien mat", 1000000));
+    ql.themTaiKhoan(Account("TK02", "MB Bank", "Ngan hang", 5000000));
+    ql.themTaiKhoan(Account("TK03", "Ví MoMo", "Ví điện tử", 500000));
+
+    int chon = -1;
+    do {
+        cout << "\n1. Xem danh sach tai khoan & so du\n";
+        cout << "2. Them giao dich (Thu/Chi)\n";
+        cout << "3. Chuyen tien giua 2 tai khoan\n";
+        cout << "4. Loc giao dich theo danh muc\n";
+        cout << "0. Thoat\n";
+        cout << "Chon chuc nang (0-4): ";
+        cin >> chon;
+
+        if (chon == 1) {
+            ql.hienThiDanhSachTaiKhoan();
+        } else if (chon == 2) {
+            string maTK, maGD, danhMuc, ghiChu;
+            double soTien; int loaiGD;
+            ql.hienThiDanhSachTaiKhoan();
+            cout << "Nhap ma tai khoan thuc hien: "; cin >> maTK;
+            Account* tk = ql.timTaiKhoan(maTK);
+            if (tk != nullptr) {
+                cout << "Chon loai (1: Thu nhap, 2: Chi phi): "; cin >> loaiGD;
+                cout << "Nhap ma GD: "; cin >> maGD;
+                cout << "Nhap so tien: "; cin >> soTien;
+                cout << "Nhap danh muc (VD: anuong, luong): "; cin >> danhMuc;
+                cout << "Nhap ghi chu: "; 
+                cin.ignore();
+                getline(cin, ghiChu);
+                if (loaiGD == 1) {
+                    auto gd = make_shared<IncomeTransaction>(maGD, soTien, danhMuc, ghiChu);
+                    tk->thucHienGiaoDich(gd);
+                } else {
+                    auto gd = make_shared<ExpenseTransaction>(maGD, soTien, danhMuc, ghiChu);
+                    tk->thucHienGiaoDich(gd);
+                }
+            } else {
+                cout << "Khong tim thay tai khoan!\n";
+            }
+        } else if (chon == 3) {
+            string maNguon, maDich; double soTien;
+            ql.hienThiDanhSachTaiKhoan();
+            cout << "Nhap ma TK nguon (rut): "; cin >> maNguon;
+            cout << "Nhap ma TK dich (nhan): "; cin >> maDich;
+            cout << "Nhap so tien chuyen: "; cin >> soTien;
+            ql.chuyenTien(maNguon, maDich, soTien);
+        } else if (chon == 4) {
+            string danhMuc;
+            cout << "Nhap danh muc can loc (VD: anuong, luong, chuyentien): ";
+            cin >> danhMuc;
+            ql.locTheoDanhMuc(danhMuc);
+        }
+    } while (chon != 0);
+}
+
+void demoPhan6() {
+    cout << "\n--- DEMO PHAN 6: BIEU DO CHI TIEU ---\n";
+    ExpenseChart bieuDo;
+    bieuDo.themGiaoDich(make_shared<ExpenseTransaction>("GD01", 500000, "An uong", "An toi", "2026-07-05"));
+    bieuDo.themGiaoDich(make_shared<ExpenseTransaction>("GD02", 1000000, "Tien nha", "Tien tro", "2026-07-15"));
+    bieuDo.themGiaoDich(make_shared<ExpenseTransaction>("GD03", 800000, "An uong", "An trua", "2026-08-03"));
+    bieuDo.themGiaoDich(make_shared<ExpenseTransaction>("GD04", 1500000, "Tien nha", "Tien tro", "2026-08-15"));
+    bieuDo.themGiaoDich(make_shared<ExpenseTransaction>("GD05", 1200000, "An uong", "An toi", "2026-09-02"));
+    bieuDo.themGiaoDich(make_shared<ExpenseTransaction>("GD06", 1800000, "Tien nha", "Tien tro", "2026-09-10"));
+    bieuDo.themGiaoDich(make_shared<RecurringExpenseTransaction>("GD07", 500000, "Giai tri", "Hang thang", "Goi dich vu", "2026-09-20"));
+    bieuDo.themGiaoDich(make_shared<ExpenseTransaction>("GD08", 700000, "An uong", "An uong", "2026-10-03"));
+    bieuDo.themGiaoDich(make_shared<ExpenseTransaction>("GD09", 900000, "Di lai", "Xang xe", "2026-10-12"));
+    
+    bieuDo.hienThiBieuDo();
+}
+
+void demoPhan7() {
+    cout << "\n--- DEMO PHAN 7: LUU TRU CSV ---\n";
+    FinanceStorage storage;
+    vector<Transaction> transactions;
+    string filename = "finance.csv";
+    int choice;
+
+    do {
+        cout << "\n===== QUAN LY DU LIEU TAI CHINH =====" << endl;
+        cout << "1. Tai du lieu tu file CSV" << endl;
+        cout << "2. Nhap giao dich moi" << endl;
+        cout << "3. Xuat du lieu ra file CSV" << endl;
+        cout << "4. Hien thi danh sach giao dich" << endl;
+        cout << "0. Thoat ve menu chinh" << endl;
+        cout << "Lua chon cua ban: ";
+        cin >> choice;
+
+        if (choice == 1) {
+            transactions = storage.loadFromCSV(filename);
+        } else if (choice == 2) {
+            char again = 'y';
+            while (again == 'y' || again == 'Y') {
+                Transaction t;
+                t.id = getNextId(transactions);
+                cout << "\nNhap loai (Income/Expense/RecurringExpense): "; cin >> t.type;
+                if (t.type != "Income" && t.type != "Expense" && t.type != "RecurringExpense") {
+                    cout << "Loai giao dich khong hop le!" << endl;
+                    continue;
+                }
+                cout << "Nhap so tien: "; cin >> t.amount;
+                cin.ignore(10000, '\n');
+                cout << "Nhap danh muc: "; getline(cin, t.category);
+                cout << "Nhap tai khoan: "; getline(cin, t.account);
+                cout << "Nhap ngay (YYYY-MM-DD): "; getline(cin, t.date);
+                cout << "Nhap mo ta: "; getline(cin, t.description);
+                transactions.push_back(t);
+                cout << "Da them giao dich thanh cong!" << endl;
+                cout << "Nhap tiep giao dich? (y/n): "; cin >> again;
+            }
+        } else if (choice == 3) {
+            storage.saveToCSV(transactions, filename);
+        } else if (choice == 4) {
+            if (transactions.empty()) {
+                cout << "Danh sach rong. Hay tai du lieu hoac nhap giao dich!" << endl;
+            } else {
+                for (int i = 0; i < (int)transactions.size(); i++) {
+                    cout << "\nMa giao dich: " << transactions[i].id;
+                    cout << "\nLoai giao dich: " << transactions[i].type;
+                    cout << "\nSo tien: " << transactions[i].amount;
+                    cout << "\nDanh muc: " << transactions[i].category;
+                    cout << "\nTai khoan: " << transactions[i].account;
+                    cout << "\nNgay giao dich: " << transactions[i].date;
+                    cout << "\nMo ta: " << transactions[i].description << endl;
+                }
+            }
+        } else if (choice != 0) {
+            cout << "Lua chon khong hop le!" << endl;
+        }
+    } while (choice != 0);
+}
+
+// ==========================================
+// HÀM MAIN() MENU TỔNG HỢP CHUNG CHO TOÀN APP
+// ==========================================
+int main() {
+    int choice = -1;
+    do {
+        cout << "\n=======================================================\n";
+        cout << "       HE THONG QUAN LY TAI CHINH (BAN GOP APP)        \n";
+        cout << "=======================================================\n";
+        cout << "1. Demo Phan 1: Giao dich co ban (Thu/Chi)\n";
+        cout << "2. Demo Phan 2: Tai khoan (Hien thi & Giao dich)\n";
+        cout << "3. Demo Phan 3: Quan ly Ngan sach (Budget)\n";
+        cout << "4. Demo Phan 4: Lap lich Giao dich (Scheduler)\n";
+        cout << "5. Demo Phan 5: Quan ly Tai chinh (Them, Loc, Chuyen)\n";
+        cout << "6. Demo Phan 6: Ve bieu do chi tieu (Chart)\n";
+        cout << "7. Demo Phan 7: Nhap/Xuat du lieu CSV (Storage)\n";
+        cout << "0. Thoat chuong trinh\n";
+        cout << "Moi ban chon (0-7): ";
+        
+        if (!(cin >> choice)) {
+            ignoreInvalidInput();
+            continue;
+        }
+
+        switch (choice) {
+            case 1: demoPhan1(); break;
+            case 2: demoPhan2(); break;
+            case 3: demoPhan3(); break;
+            case 4: demoPhan4(); break;
+            case 5: demoPhan5(); break;
+            case 6: demoPhan6(); break;
+            case 7: demoPhan7(); break;
+            case 0: cout << "Da thoat He Thong Quan Ly Tai Chinh!" << endl; break;
+            default: cout << "Lua chon khong hop le, vui long thu lai!" << endl; break;
+        }
+    } while (choice != 0);
+
+    return 0;
+}
