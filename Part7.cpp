@@ -181,7 +181,7 @@ int main() {
                 cout<<"Nhap tai khoan: ";
                 getline(cin, t.account);
 
-                cout<<"Nhap ngay (YYYY-MM-DD): ";
+                cout<<"Nhap ngay: ";
                 getline(cin, t.date);
 
                 cout<<"Nhap mo ta: ";
@@ -221,11 +221,11 @@ int main() {
         }
 
         else if (choice != 0) {
-            cout << "Lua chon khong hop le!" << endl;
+            cout<<"Lua chon khong hop le!"<<endl;
         }
 
     } while (choice != 0);
 
-    cout << "Da thoat chuong trinh!" << endl;
+    cout<<"Da thoat chuong trinh!"<<endl;
     return 0;
 }
