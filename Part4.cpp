@@ -1,143 +1,366 @@
+
 #include <iostream>
 #include <string>
 #include <vector>
-#include <map>
 #include <memory>
+#include <map>
+#include <iomanip>
+#include <limits>
+#include <cctype>
 
-// Struct quan ly quy tac lap lich giao dich
-struct ScheduledRule {
-    std::shared_ptr<RecurringExpenseTransaction> templateTransaction; 
-    Account* targetAccount;                                             
-    std::string lastProcessedMonth;                                     
+using namespace std;
+
+class BaseTransaction {
+protected:
+    string maGD;
+    double soTien;
+    string danhMuc;
+    string moTa;
+    string ngayTao;
+
+public:
+    BaseTransaction(string id, double tien, string dm,
+                    string desc = "", string date = "")
+        : maGD(id), soTien(tien), danhMuc(dm),
+          moTa(desc), ngayTao(date) {}
+
+    virtual ~BaseTransaction() {}
+
+    virtual double laySoTienThucTe() const = 0;
+
+    string getMaGD() const { return maGD; }
+    double getSoTien() const { return soTien; }
+    string getDanhMuc() const { return danhMuc; }
+    string getMoTa() const { return moTa; }
 };
 
-// Lop dieu phoi va mo phong lap lich giao dich dinh ky
+class ExpenseTransaction : public BaseTransaction {
+public:
+    ExpenseTransaction(string id, double tien, string dm,
+                       string desc = "", string date = "")
+        : BaseTransaction(id, tien, dm, desc, date) {}
+
+    double laySoTienThucTe() const override {
+        return -soTien;
+    }
+};
+
+class RecurringExpenseTransaction : public ExpenseTransaction {
+private:
+    string chuKy;
+
+public:
+    RecurringExpenseTransaction(string id, double tien, string dm,
+                                string ck = "Hang thang",
+                                string desc = "")
+        : ExpenseTransaction(id, tien, dm, desc),
+          chuKy(ck) {}
+
+    string getChuKy() const {
+        return chuKy;
+    }
+};
+
+class Account {
+private:
+    string maTK;
+    string tenTK;
+    string loaiTK;
+    double soDu;
+
+public:
+    Account(string id, string ten, string loai, double balance)
+        : maTK(id), tenTK(ten), loaiTK(loai), soDu(balance) {}
+
+    string getMaTK() const { return maTK; }
+    string getTenTK() const { return tenTK; }
+
+    bool thucHienGiaoDich(shared_ptr<BaseTransaction> gd) {
+        if (!gd || soDu + gd->laySoTienThucTe() < 0) {
+            cout << " -> [That bai] Tai khoan khong du tien!\n";
+            return false;
+        }
+
+        soDu += gd->laySoTienThucTe();
+
+        cout << " -> [Thanh cong] Tai khoan: " << tenTK
+             << " | So du moi: "
+             << fixed << setprecision(0) << soDu
+             << " VND\n";
+
+        return true;
+    }
+
+    void inThongTin() const {
+        cout << "Ma TK: " << maTK
+             << " | Ten: " << tenTK
+             << " | Loai: " << loaiTK
+             << " | So du: " << fixed << setprecision(0)
+             << soDu << " VND\n";
+    }
+};
+
+class Budget {
+private:
+    string category;
+    double limit;
+    double spent;
+
+public:
+    Budget() : limit(0), spent(0) {}
+
+    Budget(string name, double maxAmount)
+        : category(name), limit(maxAmount), spent(0) {}
+
+    bool addExpense(double amount) {
+        if (amount <= 0) return false;
+        spent += amount;
+        return true;
+    }
+
+    string getStatus() const {
+        if (spent > limit)
+            return "CANH BAO: da vuot ngan sach";
+
+        if (spent == limit)
+            return "CANH BAO: da cham nguong ngan sach";
+
+        return "Trong han muc";
+    }
+};
+
+// ==========================================
+//  KIEM TRA THANG VA XU LY NHAP SAI
+// ==========================================
+
+bool isValidYearMonth(const string& month) {
+    if (month.size() != 7 || month[4] != '-')
+        return false;
+
+    for (size_t i = 0; i < month.size(); i++) {
+        if (i == 4) continue;
+
+        if (!isdigit(static_cast<unsigned char>(month[i])))
+            return false;
+    }
+
+    int year = stoi(month.substr(0, 4));
+    int m = stoi(month.substr(5, 2));
+
+    return year >= 1 && m >= 1 && m <= 12;
+}
+
+void clearBadInput() {
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
+// ==========================================
+//  LUU THONG TIN LICH GIAO DICH
+// ==========================================
+
+struct ScheduledRule {
+    shared_ptr<RecurringExpenseTransaction> templateTransaction;
+    Account* targetAccount;
+    string lastProcessedMonth;
+};
+
+// ==========================================
+//  CLASS QUAN LY GIAO DICH DINH KY
+// ==========================================
+
 class TransactionScheduler {
 private:
-    std::vector<ScheduledRule> scheduledList;
+    vector<ScheduledRule> scheduledList;
     int autoIdCounter;
 
 public:
     TransactionScheduler() : autoIdCounter(100) {}
 
-    // Dang ky mot khoan chi phi dinh ky vao he thong
-    void registerRecurringTransaction(const std::shared_ptr<RecurringExpenseTransaction>& rExpense, Account* acc) {
+    void registerRecurringTransaction(
+        const shared_ptr<RecurringExpenseTransaction>& rExpense,
+        Account* acc
+    ) {
         if (!rExpense || !acc) {
-            std::cout << "[Loi Scheduler] Du lieu dang ky khong hop le (Null Pointer)!\n";
+            cout << "[Loi] Du lieu dang ky khong hop le!\n";
             return;
         }
 
-        ScheduledRule rule;
-        rule.templateTransaction = rExpense;
-        rule.targetAccount = acc;
-        rule.lastProcessedMonth = "";
+        for (const auto& rule : scheduledList) {
+            if (rule.templateTransaction->getMaGD() == rExpense->getMaGD()
+                && rule.targetAccount->getMaTK() == acc->getMaTK()) {
+                cout << "[Scheduler] Lich da duoc dang ky truoc do.\n";
+                return;
+            }
+        }
 
-        scheduledList.push_back(rule);
-        std::cout << "[Scheduler] Da dang ky lich: '" << rExpense->getMoTa() 
-                  << "' cho tai khoan " << acc->getTenTK() << "\n";
+        scheduledList.push_back({rExpense, acc, ""});
+
+        cout << "[Scheduler] Da dang ky lich: "
+             << rExpense->getMoTa()
+             << " cho tai khoan "
+             << acc->getTenTK() << "\n";
     }
 
-    // Process co truyen Ngan sach
-    void processMonthlyTransactions(const std::string& yearMonth, std::map<std::string, Budget>& budgets) {
-        std::cout << "\n======================================================\n";
-        std::cout << " MO PHONG KICH HOAT CHI PHI DINH KY THANG: " << yearMonth << "\n";
-        std::cout << "======================================================\n";
+    void showScheduledTransactions() const {
+        cout << "\n--- DANH SACH CHI PHI DINH KY ---\n";
 
         if (scheduledList.empty()) {
-            std::cout << "(Chua co lich trinh chi phi dinh ky nao trong he thong)\n";
+            cout << "Chua co lich nao.\n";
+            return;
+        }
+
+        for (const auto& rule : scheduledList) {
+            cout << "Ma: "
+                 << rule.templateTransaction->getMaGD()
+                 << " | Khoan chi: "
+                 << rule.templateTransaction->getMoTa()
+                 << " | Danh muc: "
+                 << rule.templateTransaction->getDanhMuc()
+                 << " | So tien: "
+                 << fixed << setprecision(0)
+                 << rule.templateTransaction->getSoTien()
+                 << " VND | Tai khoan: "
+                 << rule.targetAccount->getTenTK()
+                 << " | Chu ky: "
+                 << rule.templateTransaction->getChuKy()
+                 << '\n';
+        }
+    }
+
+    void processMonthlyTransactions(
+        const string& yearMonth,
+        map<string, Budget>& budgets
+    ) {
+        if (!isValidYearMonth(yearMonth)) {
+            cout << "[Loi] Thang khong hop le. "
+                 << "Hay nhap YYYY-MM, vi du 2026-09.\n";
+            return;
+        }
+
+        cout << "\n--- CHI PHI DINH KY THANG "
+             << yearMonth << " ---\n";
+
+        if (scheduledList.empty()) {
+            cout << "Chua co lich chi phi dinh ky nao.\n";
             return;
         }
 
         for (auto& rule : scheduledList) {
-            // 1. Kiem tra chong trung lap trong cung mot thang
             if (rule.lastProcessedMonth == yearMonth) {
-                std::cout << "- Khoan '" << rule.templateTransaction->getMoTa() 
-                          << "' da duoc xu ly trong thang " << yearMonth << " roi.\n";
+                cout << "- Khoan '"
+                     << rule.templateTransaction->getMoTa()
+                     << "' da xu ly trong thang nay, bo qua.\n";
                 continue;
             }
 
-            // 2. Sinh ma giao dich va ngay hach toan
-            std::string newId = "AUTO" + std::to_string(++autoIdCounter);
-            std::string actualDate = yearMonth + "-01"; 
+            string newId = "AUTO" + to_string(++autoIdCounter);
 
-            // 3. Khoi tao giao dich chi phi thuc te
-            auto actualTransaction = std::make_shared<ExpenseTransaction>(
+            auto actualTransaction = make_shared<ExpenseTransaction>(
                 newId,
                 rule.templateTransaction->getSoTien(),
                 rule.templateTransaction->getDanhMuc(),
                 "[Dinh ky] " + rule.templateTransaction->getMoTa(),
-                actualDate
+                yearMonth + "-01"
             );
 
-            std::cout << "* Kich hoat khoan chi dinh ky: " << rule.templateTransaction->getMoTa() << "...\n";
-            
-            // 4. Thuc hien tru tien trong Tai khoan (Phan 2)
-            bool success = rule.targetAccount->thucHienGiaoDich(actualTransaction);
+            cout << "* Xu ly khoan chi: "
+                 << rule.templateTransaction->getMoTa() << '\n';
 
-            if (success) {
-                rule.lastProcessedMonth = yearMonth; 
+            if (rule.targetAccount->thucHienGiaoDich(actualTransaction)) {
+                rule.lastProcessedMonth = yearMonth;
 
-                // 5. Tu dong cap nhat vao Ngan sach (Phan 3)
-                std::string category = rule.templateTransaction->getDanhMuc();
-                if (budgets.find(category) != budgets.end()) {
-                    budgets[category].addExpense(rule.templateTransaction->getSoTien());
-                    std::cout << "  -> [Cap nhat ngan sach] Danh muc '" << category 
-                              << "' | Trang thai: " << budgets[category].getStatus() << "\n";
+                string category =
+                    rule.templateTransaction->getDanhMuc();
+
+                auto budget = budgets.find(category);
+
+                if (budget != budgets.end()) {
+                    budget->second.addExpense(
+                        rule.templateTransaction->getSoTien()
+                    );
+
+                    cout << "  -> [Ngan sach] "
+                         << budget->second.getStatus() << '\n';
                 }
             }
         }
     }
-
-    // Overload giúp goi ham voi 1 tham so (khong truyen budgets)
-    void processMonthlyTransactions(const std::string& yearMonth) {
-        std::map<std::string, Budget> emptyBudgets;
-        processMonthlyTransactions(yearMonth, emptyBudgets);
-    }
-
-    size_t getScheduledCount() const {
-        return scheduledList.size();
-    }
 };
 
-int main() {
-    // 1. Khoi tao tai khoan
-    Account mb("TK02", "MB Bank", "Ngan hang", 5000000.0);
-    Account vmm("TK03", "Vi MoMo", "Vi dien tu", 800000.0);
+// ==========================================
+// CHUONG TRINH DEMO PHAN 4
+// ==========================================
 
-    std::cout << "--- TRANG THAI TAI KHOAN BAN DAU ---\n";
-    mb.inThongTin();
-    vmm.inThongTin();
-    std::cout << "\n";
+void demoPhan4() {
+    Account mb("TK02", "MB Bank", "Ngan hang", 5000000);
+    Account momo("TK03", "Vi MoMo", "Vi dien tu", 800000);
 
-    // 2. Khai bao cac mau chi phi dinh ky
-    auto tienTro = std::make_shared<RecurringExpenseTransaction>(
-        "REC01", 2500000, "Tien nha", "Hang thang", 5, "Tro co dinh hang thang"
-    );
-    
-    auto spotify = std::make_shared<RecurringExpenseTransaction>(
-        "REC02", 59000, "Giai tri", "Hang thang", 1, "Goi Spotify Sinh Vien"
+    auto tienTro = make_shared<RecurringExpenseTransaction>(
+        "REC01", 2500000, "Tien nha",
+        "Hang thang", "Tro co dinh hang thang"
     );
 
-    // 3. Khoi tao bo lap lich va dang ky cac khoan chi
+    auto spotify = make_shared<RecurringExpenseTransaction>(
+        "REC02", 59000, "Giai tri",
+        "Hang thang", "Goi Spotify Sinh Vien"
+    );
+
     TransactionScheduler scheduler;
+
     scheduler.registerRecurringTransaction(tienTro, &mb);
-    scheduler.registerRecurringTransaction(spotify, &vmm);
+    scheduler.registerRecurringTransaction(spotify, &momo);
 
-    // 4. Mo phong kich hoat lap lich tu dong cho Thang 09/2026
-    scheduler.processMonthlyTransactions("2026-09");
+    map<string, Budget> budgets;
+    budgets["Tien nha"] = Budget("Tien nha", 5000000);
+    budgets["Giai tri"] = Budget("Giai tri", 200000);
 
-    // 5. Kiem tra ket qua so du
-    std::cout << "\n--- SO DU SAU KHI TU DONG TRU CHI PHI THANG 09/2026 ---\n";
-    mb.inThongTin();
-    vmm.inThongTin();
+    int choice = -1;
 
-    // 6. Mo phong chay tiep cho Thang 10/2026
-    scheduler.processMonthlyTransactions("2026-10");
+    do {
+        cout << "\n========================================\n"
+             << " MENU PHAN 4 - GIAO DICH DINH KY\n"
+             << "========================================\n"
+             << "1. Xem tai khoan va so du\n"
+             << "2. Xem danh sach chi phi dinh ky\n"
+             << "3. Chay lap lich theo thang\n"
+             << "4. Chay lai thang de kiem tra trung lap\n"
+             << "0. Thoat\n"
+             << "Lua chon: ";
 
-    std::cout << "\n--- SO DU SAU KHI TU DONG TRU CHI PHI THANG 10/2026 ---\n";
-    mb.inThongTin();
-    vmm.inThongTin();
+        if (!(cin >> choice)) {
+            clearBadInput();
+            cout << "Lua chon khong hop le.\n";
+            continue;
+        }
 
-    return 0;
+        if (choice == 1) {
+            mb.inThongTin();
+            momo.inThongTin();
+        }
+        else if (choice == 2) {
+            scheduler.showScheduledTransactions();
+        }
+        else if (choice == 3 || choice == 4) {
+            string month;
+
+            cout << "Nhap thang (YYYY-MM): ";
+            cin >> month;
+
+            scheduler.processMonthlyTransactions(month, budgets);
+        }
+        else if (choice != 0) {
+            cout << "Vui long chon tu 0 den 4.\n";
+        }
+
+    } while (choice != 0);
 }
 
+// ==========================================
+//  HAM MAIN
+// ==========================================
+
+int main() {
+    demoPhan4();
+    return 0;
+}
