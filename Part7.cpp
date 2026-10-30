@@ -170,8 +170,16 @@ int main() {
                     continue;
                 }
 
+                while (true){
                 cout<<"Nhap so tien ( viet bang so ): ";
-                cin>>t.amount;
+                if(cin>>t.amount){
+                	cin.ignore(10000, '\n');
+                	break;
+				}
+				cout<<"So tien khong hop le! Vui long nhap lai!"<<endl;
+				cin.clear();
+                cin.ignore(10000, '\n');
+				}
 
                 cin.ignore(10000, '\n');
 
