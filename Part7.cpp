@@ -170,7 +170,7 @@ int main() {
                     continue;
                 }
 
-                cout<<"Nhap so tien: ";
+                cout<<"Nhap so tien ( viet bang so ): ";
                 cin>>t.amount;
 
                 cin.ignore(10000, '\n');
