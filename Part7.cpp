@@ -25,11 +25,11 @@ public:
         ofstream file(filename.c_str());
 
         if (!file.is_open()) {
-            cout << "Khong mo duoc file de ghi!" << endl;
+            cout<<"Khong mo duoc file de ghi!"<<endl;
             return;
         }
 
-        file << "ID,Type,Amount,Category,Account,Date,Description\n";
+        file<<"ID,Type,Amount,Category,Account,Date,Description\n";
 
         // GHI THONG TIN CAC GIAO DICH
         for (int i = 0; i < (int)transactions.size(); i++) {
